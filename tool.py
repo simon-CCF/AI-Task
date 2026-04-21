@@ -1,17 +1,9 @@
-#!/usr/bin/env python3
-"""
-GitHub Natural Language Search Tool
-NL query → LLM → GitHub Search API → Repo deep dive
-"""
-
 import os
 import sys
 import json
 import requests
 import argparse
 from datetime import datetime
-
-# ── 設定 ──────────────────────────────────────────────────────────────────────
 
 def parse_env_assignment(line: str):
     cleaned = line.strip()
@@ -55,7 +47,6 @@ def require_env(name: str) -> str:
 
 load_dotenv()
 
-# 可用模型清單，之後新增在這裡
 AVAILABLE_MODELS = {
     "1": {
         "id": "openai/gpt-oss-120b:free",
@@ -65,14 +56,10 @@ AVAILABLE_MODELS = {
         "id": "minimax/minimax-m2.5:free",
         "name": "Minimax M2.5 (Minimax)",
     },
-    # 新增模型範例：
-    # "3": {
-    #     "id": "google/gemini-flash-1.5",
-    #     "name": "Gemini 1.5 Flash (Google)",
-    # },
+    
 }
 
-# ── LLM 呼叫 ──────────────────────────────────────────────────────────────────
+
 
 def call_llm(model_id: str, system: str, user: str) -> str:
     """透過 OpenRouter 呼叫指定模型"""
@@ -106,9 +93,6 @@ def call_llm(model_id: str, system: str, user: str) -> str:
         message = error.get("message") or json.dumps(error, ensure_ascii=False)
         raise RuntimeError(f"模型回傳異常：{message}")
     raise RuntimeError("模型回傳格式不完整。")
-
-
-# ── GitHub API ────────────────────────────────────────────────────────────────
 
 def github_headers() -> dict:
     return {
@@ -164,8 +148,6 @@ def github_get_releases(owner: str, repo: str) -> list[dict]:
     return resp.json()
 
 
-# ── 格式化輸出 ────────────────────────────────────────────────────────────────
-
 def fmt_date(iso: str) -> str:
     try:
         return datetime.fromisoformat(iso.replace("Z", "+00:00")).strftime("%Y-%m-%d")
@@ -187,8 +169,6 @@ def print_repo_list(repos: list[dict]):
         )
         print()
 
-
-# ── 模型選擇 ──────────────────────────────────────────────────────────────────
 
 def select_models() -> list[dict]:
     print("\n" + "═" * 60)
@@ -216,8 +196,6 @@ def select_models() -> list[dict]:
     return selected
 
 
-# ── 核心流程 ──────────────────────────────────────────────────────────────────
-
 NL_TO_SEARCH_SYSTEM = """
 你是 GitHub Search API 的 query 生成器。
 使用者會用任意語言輸入自然語言描述，你必須將其轉換為合法的 GitHub Search query 字串。
@@ -242,7 +220,6 @@ GitHub Search query 語法範例：
 今天的日期是 2026-04-21，相對日期請以此計算。
 """.strip()
 
-# 偵測 LLM 回應是否為拒絕訊息
 REFUSAL_SIGNALS = [
     "i'm sorry", "i cannot", "i can't", "unable to",
     "not able to", "i apologize", "不能", "無法", "抱歉", "對不起"
@@ -453,9 +430,6 @@ def deep_dive(model: dict, owner: str, repo: str, follow_up: str):
     print(answer)
     print()
 
-
-# ── 主程式 ────────────────────────────────────────────────────────────────────
-
 def main():
     parser = argparse.ArgumentParser(description="GitHub 自然語言搜尋工具")
     parser.add_argument("query", nargs="?", help="自然語言搜尋問題（可用任何語言）")
@@ -478,7 +452,7 @@ def main():
             print("  未輸入問題，結束。")
             sys.exit(0)
 
-    # 多模型搜尋（如果多個模型，使用第一個做搜尋，其餘做比較）
+    
     all_results = {}
     primary_repos = None
     status_counts = {}
@@ -510,7 +484,7 @@ def main():
             print("  所有模型都未產生可用結果，請檢查輸入內容、API key 或網路連線。")
         sys.exit(1)
 
-    # 如果多模型，顯示 query 比較
+   
     if len(models) > 1:
         print("\n" + "═" * 60)
         print("  📊 各模型生成的 GitHub Query 比較")
@@ -518,10 +492,10 @@ def main():
         for name, result in all_results.items():
             print(f"  [{name}]\n  {result['query']}\n")
 
-    # 顯示搜尋結果（用第一個模型的結果）
+    
     print_repo_list(primary_repos)
 
-    # 使用者選 repo
+    
     print("  輸入 repo 編號進行深入查詢（或按 Enter 結束）：")
     choice = input("  > ").strip()
     if not choice:
@@ -541,7 +515,7 @@ def main():
     repo_name = selected_repo["name"]
     print(f"\n  ✅ 已選擇：{owner}/{repo_name}")
 
-    # 深入查詢
+    
     print("\n  你想了解這個 repo 的什麼？（例如：這個專案是做什麼的？最新版本是什麼？）")
     follow_up = input("  > ").strip()
     if not follow_up:
