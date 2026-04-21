@@ -1,4 +1,4 @@
-# GitHub 自然語言搜尋工具
+# GitHub CLI搜尋工具
 
 這個專案把自然語言問題轉成 GitHub Search API 查詢，先找出合適的 repository，再針對單一 repo 做進一步分析。
 
