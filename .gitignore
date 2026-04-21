@@ -1,0 +1,27 @@
+# Environment variables (contains API keys)
+.env
+.env.*
+!.env.example
+
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# IDE
+.vscode/
+.idea/
+
+# promptfoo logs
+.promptfoo/
+
+# Node
+node_modules/
