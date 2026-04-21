@@ -13,6 +13,25 @@ from datetime import datetime
 
 # ── 設定 ──────────────────────────────────────────────────────────────────────
 
+def parse_env_assignment(line: str):
+    cleaned = line.strip()
+    if cleaned.startswith("export "):
+        cleaned = cleaned[7:].lstrip()
+    if not cleaned or cleaned.startswith("#") or "=" not in cleaned:
+        return None
+
+    key, value = cleaned.split("=", 1)
+    key = key.strip()
+    value = value.strip()
+    if not key:
+        return None
+
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in {"'", '"'}:
+        value = value[1:-1]
+
+    return key, value
+
+
 def load_dotenv(path: str = ".env"):
     env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), path)
     if not os.path.exists(env_path):
@@ -20,11 +39,11 @@ def load_dotenv(path: str = ".env"):
 
     with open(env_path, encoding="utf-8") as f:
         for raw_line in f:
-            line = raw_line.strip()
-            if not line or line.startswith("#") or "=" not in line:
+            assignment = parse_env_assignment(raw_line)
+            if assignment is None:
                 continue
-            key, value = line.split("=", 1)
-            os.environ.setdefault(key.strip(), value.strip())
+            key, value = assignment
+            os.environ.setdefault(key, value)
 
 
 def require_env(name: str) -> str:
@@ -139,6 +158,8 @@ def github_get_releases(owner: str, repo: str) -> list[dict]:
     """取得最新 5 個 release"""
     url = f"https://api.github.com/repos/{owner}/{repo}/releases"
     resp = requests.get(url, headers=github_headers(), params={"per_page": 5}, timeout=15)
+    if resp.status_code == 404:
+        return []
     resp.raise_for_status()
     return resp.json()
 
@@ -400,8 +421,11 @@ def deep_dive(model: dict, owner: str, repo: str, follow_up: str):
 
         if "releases" in endpoints:
             releases = github_get_releases(owner, repo)
-            release_summary = [{"tag": r["tag_name"], "date": r["published_at"], "name": r["name"]} for r in releases]
-            data_parts.append(f"## 最新 Release\n{json.dumps(release_summary, ensure_ascii=False, indent=2)}")
+            if releases:
+                release_summary = [{"tag": r["tag_name"], "date": r["published_at"], "name": r["name"]} for r in releases]
+                data_parts.append(f"## 最新 Release\n{json.dumps(release_summary, ensure_ascii=False, indent=2)}")
+            else:
+                data_parts.append("## 最新 Release\n（目前沒有 release）")
 
         if not data_parts:
             data_parts.append(github_get_repo(owner, repo).__str__())

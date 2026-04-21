@@ -21,6 +21,19 @@ class ToolTests(unittest.TestCase):
             self.assertEqual(os.getenv("OPENROUTER_API_KEY"), "test-openrouter")
             self.assertEqual(os.getenv("GITHUB_TOKEN"), "test-github")
 
+    def test_load_dotenv_supports_export_and_quoted_values(self):
+        with tempfile.NamedTemporaryFile("w", encoding="utf-8", delete=False) as tmp:
+            tmp.write('export OPENROUTER_API_KEY="quoted-openrouter"\n')
+            tmp.write("export GITHUB_TOKEN='quoted-github'\n")
+            env_path = tmp.name
+
+        self.addCleanup(lambda: os.path.exists(env_path) and os.remove(env_path))
+
+        with patch.dict(os.environ, {}, clear=True):
+            tool.load_dotenv(env_path)
+            self.assertEqual(os.getenv("OPENROUTER_API_KEY"), "quoted-openrouter")
+            self.assertEqual(os.getenv("GITHUB_TOKEN"), "quoted-github")
+
     def test_normalize_query_output(self):
         text = "```\nlanguage:python   stars:>500\n```"
         self.assertEqual(tool.normalize_query_output(text), "language:python stars:>500")
@@ -31,6 +44,16 @@ class ToolTests(unittest.TestCase):
 
     def test_parse_endpoints_falls_back_to_info(self):
         self.assertEqual(tool.parse_endpoints("summary only"), ["info"])
+
+    @patch("tool.requests.get")
+    def test_github_get_releases_returns_empty_on_404(self, mock_get):
+        mock_response = mock_get.return_value
+        mock_response.status_code = 404
+
+        with patch.dict(os.environ, {"GITHUB_TOKEN": "test-token"}, clear=True):
+            releases = tool.github_get_releases("owner", "repo")
+
+        self.assertEqual(releases, [])
 
     @patch("tool.requests.post")
     def test_call_llm_raises_readable_error_for_missing_choices(self, mock_post):
@@ -69,6 +92,16 @@ class ToolTests(unittest.TestCase):
         self.assertIn("需要查詢：info", output)
         mock_get_repo.assert_called_once_with("owner", "repo")
         self.assertIn("整理後的答案", output)
+
+    @patch("tool.github_get_releases", return_value=[])
+    @patch("tool.call_llm", side_effect=["releases", "整理後的版本資訊"])
+    def test_deep_dive_handles_repo_without_releases(self, mock_call_llm, mock_get_releases):
+        with patch("sys.stdout", new_callable=StringIO) as fake_stdout:
+            tool.deep_dive(tool.AVAILABLE_MODELS["1"], "owner", "repo", "最新版本是什麼？")
+        output = fake_stdout.getvalue()
+        self.assertIn("需要查詢：releases", output)
+        self.assertIn("整理後的版本資訊", output)
+        mock_get_releases.assert_called_once_with("owner", "repo")
 
 
 if __name__ == "__main__":

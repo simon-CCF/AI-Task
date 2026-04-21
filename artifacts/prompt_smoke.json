@@ -45,21 +45,21 @@
     "model": "Minimax M2.5 (Minimax)",
     "case": "一般查詢",
     "query": "Find Python web frameworks",
-    "output": "language:python topic:web-framework",
+    "output": "web-framework language:python",
     "passed": true
   },
   {
     "model": "Minimax M2.5 (Minimax)",
     "case": "中文多條件查詢",
     "query": "找 stars 超過 1000 的 Python 安全工具，而且不要 fork",
-    "output": "security language:python stars:>1000 fork:false",
+    "output": "topic:security language:python stars:>1000 fork:false",
     "passed": true
   },
   {
     "model": "Minimax M2.5 (Minimax)",
     "case": "拼字修正",
     "query": "find pythn securty tools with mroe than 500 starrs",
-    "output": "language:python topic:security stars:>500",
+    "output": "security language:python stars:>500",
     "passed": true
   },
   {

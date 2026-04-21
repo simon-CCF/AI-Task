@@ -45,6 +45,8 @@ python3 tool.py "找近期還有維護的 Python 安全工具"
 - 補強查詢、深入分析與 GitHub 呼叫的錯誤處理，避免 401、403 或網路問題直接中斷
 - 整理模型輸出解析，避免被 code fence、換行或多餘標點影響
 - 查無結果、模糊輸入與無關輸入時，改成輸出對應提示，不再一律導向 API key 或網路問題
+- `.env` 現在支援 `export KEY=value` 與帶引號的值，降低手動貼上設定時出錯的機率
+- repo 沒有 release 時，深入查詢會回傳「目前沒有 release」，不會因為 GitHub 404 中斷整段流程
 
 ## 功能流程
 
@@ -86,7 +88,7 @@ python3 -m unittest discover -s tests -v
 
 ## 驗證結果
 
-- `python3 -m unittest discover -s tests -v`：8/8 通過
+- `python3 -m unittest discover -s tests -v`：11/11 通過
 - `python3 tests/prompt_smoke.py --json-out artifacts/prompt_smoke.json --svg-out artifacts/prompt_smoke.svg`：12/12 通過
 
 驗證輸出位置：
