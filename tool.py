@@ -216,6 +216,7 @@ REFUSAL_SIGNALS = [
     "i'm sorry", "i cannot", "i can't", "unable to",
     "not able to", "i apologize", "不能", "無法", "抱歉", "對不起"
 ]
+VALID_ENDPOINTS = {"info", "readme", "languages", "releases"}
 
 
 def response_status(error: requests.HTTPError):
@@ -271,6 +272,30 @@ def handle_github_error(error: Exception, action: str) -> bool:
 def is_refusal(text: str) -> bool:
     return any(signal in text.lower() for signal in REFUSAL_SIGNALS)
 
+
+def normalize_model_text(text: str) -> str:
+    cleaned = text.strip()
+    if cleaned.startswith("```") and cleaned.endswith("```"):
+        lines = cleaned.splitlines()
+        if len(lines) >= 3:
+            cleaned = "\n".join(lines[1:-1]).strip()
+    return cleaned
+
+
+def normalize_query_output(text: str) -> str:
+    cleaned = normalize_model_text(text)
+    return " ".join(cleaned.split())
+
+
+def parse_endpoints(text: str) -> list[str]:
+    cleaned = normalize_model_text(text).replace("\n", ",")
+    endpoints = []
+    for raw_item in cleaned.split(","):
+        item = raw_item.strip().lower().strip(".:;")
+        if item in VALID_ENDPOINTS and item not in endpoints:
+            endpoints.append(item)
+    return endpoints or ["info"]
+
 REPO_ENDPOINTS_SYSTEM = """
 你是 GitHub API 助理。根據使用者的問題，決定需要查詢哪些 GitHub API endpoint。
 可用的 endpoint 如下：
@@ -298,7 +323,7 @@ def run(model: dict, nl_query: str):
     print(f"\n  🤖 [{model_name}] 正在將問題轉換為 GitHub query...")
 
     try:
-        github_query = call_llm(model_id, NL_TO_SEARCH_SYSTEM, nl_query)
+        github_query = normalize_query_output(call_llm(model_id, NL_TO_SEARCH_SYSTEM, nl_query))
     except Exception as e:
         if handle_llm_error(model_name, e, "處理查詢"):
             return None
@@ -326,6 +351,9 @@ def run(model: dict, nl_query: str):
             return None
         print(f"  ❌ GitHub 搜尋失敗：{e}")
         return None
+    if not repos:
+        print(f"  ⚠️  [{model_name}] 找不到符合條件的 repository。")
+        return None
     return github_query, repos
 
 
@@ -342,7 +370,7 @@ def deep_dive(model: dict, owner: str, repo: str, follow_up: str):
             return
         print(f"  ❌ [{model_name}] 無法判斷查詢資料：{e}")
         return
-    endpoints = [e.strip() for e in endpoints_str.split(",")]
+    endpoints = parse_endpoints(endpoints_str)
     print(f"  📋 需要查詢：{', '.join(endpoints)}")
 
     data_parts = []
@@ -378,7 +406,7 @@ def deep_dive(model: dict, owner: str, repo: str, follow_up: str):
 
     print(f"\n  🤖 [{model_name}] 整理答案中...\n")
     try:
-        answer = call_llm(model_id, SYNTHESIZE_SYSTEM, user_prompt)
+        answer = normalize_model_text(call_llm(model_id, SYNTHESIZE_SYSTEM, user_prompt))
     except Exception as e:
         if handle_llm_error(model_name, e, "整理回答"):
             return
@@ -433,7 +461,10 @@ def main():
             print(f"  ❌ [{model['name']}] 發生錯誤：{e}")
 
     if not primary_repos:
-        print("  所有模型都失敗了，請檢查 API key 或網路連線。")
+        if all_results:
+            print("  目前沒有可顯示的搜尋結果。")
+        else:
+            print("  所有模型都未產生可用結果，請檢查輸入內容、API key 或網路連線。")
         sys.exit(1)
 
     # 如果多模型，顯示 query 比較
