@@ -25,3 +25,5 @@ venv/
 
 # Node
 node_modules/
+.claude.md
+claude.md
