@@ -1,4 +1,4 @@
-# GitHub 自然語言搜尋工具
+# GitHub CLI搜尋工具
 
 
 ## 需求
@@ -107,9 +107,10 @@ promptfoo 的執行歷史會存放在本地 `.promptfoo/`，該目錄已被 `.gi
 | gpt-5.4-xhigh | 30/30 | 86/86 | 100.00% | 28,844 | 961 | 1,465 ms | 9 |
 | kimi-k2.5 | 20/30 | 52/86 | 66.67% | 40,260 | 1,342 | 14,523 ms | 26 |
 
-### 哪些模型達到作業門檻
+<img width="1440" height="779" alt="image" src="https://github.com/user-attachments/assets/626d4599-36fd-46f0-b19d-09fe66a9a128" />
 
-作業要求是至少 3 個模型、且最終入選模型都要超過 85%。
+
+### 哪些模型達到門檻
 
 這次 sweep 中，以下 6 個模型都達成門檻，可以作為 **final threshold-compliant set**：
 
