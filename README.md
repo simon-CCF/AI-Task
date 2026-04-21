@@ -112,7 +112,7 @@ promptfoo 的執行歷史會存放在本地 `.promptfoo/`，該目錄已被 `.gi
 
 ### 哪些模型達到門檻
 
-這次 sweep 中，以下 6 個模型都達成門檻，可以作為 **final threshold-compliant set**：
+這次 sweep 中，以下 6 個模型都達成門檻，可以作為最後採用的模型集合：
 
 - gpt-oss-120b
 - grok-4.20
@@ -134,4 +134,4 @@ promptfoo 的執行歷史會存放在本地 `.promptfoo/`，該目錄已被 `.gi
 - **promptfoo 很適合做 structured-output regression**：一旦把 output normalize 與 asserts 定義清楚，重跑不同模型非常快，也很適合直接在 UI 看哪一題出錯。
 - **ground truth 最好拆成 assertion bundle，而不是只寫單一字串**：GitHub Search query 常常存在多個等價寫法，用 `icontains + regex + not-icontains` 比只比對整串字面值更合理。
 - **規則密度夠高時，較弱模型很容易漏 qualifier**：`language:`、`fork:false`、日期 comparator、sentinel handling 這些都要在 prompt 裡講得非常硬，不然模型會退回比較鬆散的自然語言關鍵字。
-- **把 exploratory sweep 和 final selected set 分開寫比較誠實**：這輪 7 模型 sweep 幫助我看出 Kimi 在這個任務上明顯不穩定，但真正拿來滿足作業門檻的，應該是那 6 個超過 85% 的模型。
+- **把探索用的 sweep 結果和最後採用的模型集合分開寫會更清楚**：這輪 7 模型 sweep 幫助我看出 Kimi 在這個任務上明顯不穩定，但真正適合放進最終結論的，是那 6 個超過 85% 的模型。
