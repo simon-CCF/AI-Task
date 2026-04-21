@@ -77,7 +77,16 @@ def call_llm(model_id: str, system: str, user: str) -> str:
         timeout=30,
     )
     resp.raise_for_status()
-    return resp.json()["choices"][0]["message"]["content"].strip()
+    data = resp.json()
+    choices = data.get("choices")
+    if choices:
+        return choices[0]["message"]["content"].strip()
+
+    error = data.get("error")
+    if isinstance(error, dict):
+        message = error.get("message") or json.dumps(error, ensure_ascii=False)
+        raise RuntimeError(f"模型回傳異常：{message}")
+    raise RuntimeError("模型回傳格式不完整。")
 
 
 # ── GitHub API ────────────────────────────────────────────────────────────────
@@ -202,6 +211,7 @@ GitHub Search query 語法範例：
 - 不要加引號包住整個 query
 - 修正明顯的拼字錯誤後再生成 query
 - 將非英文輸入翻譯為英文的 GitHub query 關鍵字
+- 程式語言請優先使用 language: 限定，不要把 Python、Go、Rust 這類語言寫成 topic:
 - 若輸入條件互相衝突（如 stars>1000 且 stars<10），只保留其中最合理的一個
 - 若輸入太模糊（少於 2 個可識別的技術概念），輸出：CLARIFY_NEEDED
 - 若輸入與軟體、程式碼、技術或 GitHub repository 明顯無關，輸出：INVALID_QUERY
@@ -316,7 +326,7 @@ SYNTHESIZE_SYSTEM = """
 
 
 def run(model: dict, nl_query: str):
-    """單一模型執行完整 Part 1 流程（Step 1-4），回傳 (github_query, repos) 或 None"""
+    """單一模型執行完整 Part 1 流程（Step 1-4）"""
     model_name = model["name"]
     model_id = model["id"]
 
@@ -326,21 +336,21 @@ def run(model: dict, nl_query: str):
         github_query = normalize_query_output(call_llm(model_id, NL_TO_SEARCH_SYSTEM, nl_query))
     except Exception as e:
         if handle_llm_error(model_name, e, "處理查詢"):
-            return None
+            return {"status": "error"}
         print(f"  ❌ [{model_name}] 呼叫模型失敗：{e}")
-        return None
+        return {"status": "error"}
 
     if github_query.strip() == "INVALID_QUERY":
         print(f"  ⚠️  [{model_name}] 查詢內容與 GitHub / 軟體無關，請重新描述你想搜尋的技術主題。")
-        return None
+        return {"status": "invalid"}
 
     if github_query.strip() == "CLARIFY_NEEDED":
         print(f"  🔍 [{model_name}] 查詢太模糊，請描述得更具體。例如：「Python 安全工具，超過 500 星」")
-        return None
+        return {"status": "clarify"}
 
     if is_refusal(github_query):
         print(f"  ⚠️  [{model_name}] 模型拒絕處理此查詢。")
-        return None
+        return {"status": "refusal"}
 
     print(f"  🔍 生成的 query：{github_query}")
     print(f"  📡 搜尋 GitHub...")
@@ -348,13 +358,13 @@ def run(model: dict, nl_query: str):
         repos = github_search_repos(github_query)
     except Exception as e:
         if handle_github_error(e, "搜尋"):
-            return None
+            return {"status": "error"}
         print(f"  ❌ GitHub 搜尋失敗：{e}")
-        return None
+        return {"status": "error"}
     if not repos:
         print(f"  ⚠️  [{model_name}] 找不到符合條件的 repository。")
-        return None
-    return github_query, repos
+        return {"status": "empty"}
+    return {"status": "ok", "query": github_query, "repos": repos}
 
 
 def deep_dive(model: dict, owner: str, repo: str, follow_up: str):
@@ -447,13 +457,18 @@ def main():
     # 多模型搜尋（如果多個模型，使用第一個做搜尋，其餘做比較）
     all_results = {}
     primary_repos = None
+    status_counts = {}
 
     for model in models:
         try:
             result = run(model, nl_query)
-            if result is None:
+            status = result["status"]
+            status_counts[status] = status_counts.get(status, 0) + 1
+
+            if status != "ok":
                 continue
-            github_query, repos = result
+            github_query = result["query"]
+            repos = result["repos"]
             all_results[model["name"]] = {"query": github_query, "repos": repos}
             if primary_repos is None:
                 primary_repos = repos
@@ -461,8 +476,12 @@ def main():
             print(f"  ❌ [{model['name']}] 發生錯誤：{e}")
 
     if not primary_repos:
-        if all_results:
-            print("  目前沒有可顯示的搜尋結果。")
+        if status_counts.get("invalid") and len(status_counts) == 1:
+            print("  這次輸入不屬於可搜尋的技術主題。")
+        elif status_counts.get("clarify") and len(status_counts) == 1:
+            print("  這次輸入太模糊，補上技術關鍵字後再試一次。")
+        elif status_counts.get("empty") and len(status_counts) == 1:
+            print("  目前沒有找到符合條件的 repository。")
         else:
             print("  所有模型都未產生可用結果，請檢查輸入內容、API key 或網路連線。")
         sys.exit(1)
