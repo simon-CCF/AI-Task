@@ -1,11 +1,5 @@
 # GitHub 自然語言搜尋工具
 
-這份 take-home assessment 分成兩部分：
-
-1. 用自然語言把使用者需求轉成 GitHub Search API query，並真的執行查詢。
-2. 用 `promptfoo` 針對多模型做結構化輸出評估，檢查不同模型能不能穩定產生正確的 GitHub query。
-
-目前 repo 已整理成 **promptfoo-only eval workflow**：Part 2 的 30 筆測試案例、assert 規則、七個模型 provider，全部都直接放在 [`promptfooconfig.yaml`](./promptfooconfig.yaml)。
 
 ## 需求
 
