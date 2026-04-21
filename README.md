@@ -37,10 +37,9 @@ python3 tool.py
 python3 tool.py "找近期還有維護的 Python 安全工具"
 ```
 
-## 這次調整
+## 歷史調整
 
-- 補回 `.env` 載入流程，避免程式啟動後讀不到 `OPENROUTER_API_KEY` 與 `GITHUB_TOKEN`
-- 將模型設定改回 `gpt-oss-120b` 與 `Minimax M2.5` 兩個原本使用的模型
+- 將模型設定 `gpt-oss-120b` 與 `Minimax M2.5` 兩個主要使用的模型
 - 修正 OpenRouter model id 格式，避免把 prompt 測試用格式直接送到 API
 - 補強查詢、深入分析與 GitHub 呼叫的錯誤處理，避免 401、403 或網路問題直接中斷
 - 整理模型輸出解析，避免被 code fence、換行或多餘標點影響
@@ -61,8 +60,7 @@ python3 tool.py "找近期還有維護的 Python 安全工具"
 `promptfooconfig.yaml` 內含一組 smoke test，用來確認目前 prompt 規則有沒有維持在可接受範圍。
 
 ```bash
-npx --yes promptfoo@latest eval -c promptfooconfig.yaml
-npx --yes promptfoo@latest view
+promptfoo eval
 ```
 
 如果你想直接用目前 `tool.py` 的 prompt 跑實際 smoke test，也可以執行：
