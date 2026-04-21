@@ -37,6 +37,15 @@ python3 tool.py
 python3 tool.py "找近期還有維護的 Python 安全工具"
 ```
 
+## 這次調整
+
+- 補回 `.env` 載入流程，避免程式啟動後讀不到 `OPENROUTER_API_KEY` 與 `GITHUB_TOKEN`
+- 將模型設定改回 `gpt-oss-120b` 與 `Minimax M2.5` 兩個原本使用的模型
+- 修正 OpenRouter model id 格式，避免把 prompt 測試用格式直接送到 API
+- 補強查詢、深入分析與 GitHub 呼叫的錯誤處理，避免 401、403 或網路問題直接中斷
+- 整理模型輸出解析，避免被 code fence、換行或多餘標點影響
+- 查無結果、模糊輸入與無關輸入時，改成輸出對應提示，不再一律導向 API key 或網路問題
+
 ## 功能流程
 
 1. 選擇要使用的模型
@@ -47,9 +56,41 @@ python3 tool.py "找近期還有維護的 Python 安全工具"
 
 ## Promptfoo 測試
 
-`promptfooconfig.yaml` 內含 GitHub query 轉換的評估案例，可用來比較不同模型輸出是否穩定。
+`promptfooconfig.yaml` 內含一組 smoke test，用來確認目前 prompt 規則有沒有維持在可接受範圍。
 
 ```bash
-promptfoo eval
-promptfoo view
+npx --yes promptfoo@latest eval -c promptfooconfig.yaml
+npx --yes promptfoo@latest view
 ```
+
+如果你想直接用目前 `tool.py` 的 prompt 跑實際 smoke test，也可以執行：
+
+```bash
+python3 tests/prompt_smoke.py
+```
+
+## 邏輯測試
+
+```bash
+python3 -m unittest discover -s tests -v
+```
+
+目前測試涵蓋：
+
+- `.env` 載入
+- query 輸出正規化
+- endpoint 解析與 fallback
+- 無關輸入攔截
+- 查無結果分支
+- 深入查詢 fallback 路徑
+
+## 驗證結果
+
+- `python3 -m unittest discover -s tests -v`：8/8 通過
+- `python3 tests/prompt_smoke.py --json-out artifacts/prompt_smoke.json --svg-out artifacts/prompt_smoke.svg`：12/12 通過
+
+驗證輸出位置：
+
+- `artifacts/prompt_smoke.json`
+- `artifacts/prompt_smoke.png`
+- `artifacts/prompt_smoke.svg`
