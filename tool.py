@@ -217,6 +217,57 @@ REFUSAL_SIGNALS = [
     "not able to", "i apologize", "不能", "無法", "抱歉", "對不起"
 ]
 
+
+def response_status(error: requests.HTTPError):
+    if error.response is None:
+        return None
+    return error.response.status_code
+
+
+def handle_llm_error(model_name: str, error: Exception, action: str) -> bool:
+    if isinstance(error, RuntimeError):
+        print(f"  ❌ [{model_name}] {error}")
+        return True
+
+    if isinstance(error, requests.HTTPError):
+        status = response_status(error)
+        if status == 401:
+            print(f"  ❌ [{model_name}] 無法呼叫模型，請確認 OPENROUTER_API_KEY 是否正確。")
+        elif status == 403:
+            print(f"  ⚠️  [{model_name}] {action}時被服務端拒絕。")
+        else:
+            print(f"  ❌ [{model_name}] 呼叫模型失敗：HTTP {status or 'unknown'}")
+        return True
+
+    if isinstance(error, requests.RequestException):
+        print(f"  ❌ [{model_name}] 呼叫模型失敗：{error}")
+        return True
+
+    return False
+
+
+def handle_github_error(error: Exception, action: str) -> bool:
+    if isinstance(error, RuntimeError):
+        print(f"  ❌ {error}")
+        return True
+
+    if isinstance(error, requests.HTTPError):
+        status = response_status(error)
+        if status == 401:
+            print(f"  ❌ GitHub {action}失敗，請確認 GITHUB_TOKEN 是否正確。")
+        elif status == 403:
+            print(f"  ❌ GitHub {action}失敗，可能遇到權限不足或速率限制。")
+        else:
+            print(f"  ❌ GitHub {action}失敗：HTTP {status or 'unknown'}")
+        return True
+
+    if isinstance(error, requests.RequestException):
+        print(f"  ❌ GitHub {action}失敗：{error}")
+        return True
+
+    return False
+
+
 def is_refusal(text: str) -> bool:
     return any(signal in text.lower() for signal in REFUSAL_SIGNALS)
 
@@ -248,14 +299,10 @@ def run(model: dict, nl_query: str):
 
     try:
         github_query = call_llm(model_id, NL_TO_SEARCH_SYSTEM, nl_query)
-    except requests.HTTPError as e:
-        if e.response.status_code == 403:
-            print(f"  ⚠️  [{model_name}] 模型拒絕回應此查詢（內容政策限制）")
-        else:
-            print(f"  ❌ [{model_name}] API 錯誤：HTTP {e.response.status_code}")
-        return None
     except Exception as e:
-        print(f"  ❌ [{model_name}] 呼叫 LLM 失敗：{e}")
+        if handle_llm_error(model_name, e, "處理查詢"):
+            return None
+        print(f"  ❌ [{model_name}] 呼叫模型失敗：{e}")
         return None
 
     if github_query.strip() == "INVALID_QUERY":
@@ -272,45 +319,71 @@ def run(model: dict, nl_query: str):
 
     print(f"  🔍 生成的 query：{github_query}")
     print(f"  📡 搜尋 GitHub...")
-    repos = github_search_repos(github_query)
+    try:
+        repos = github_search_repos(github_query)
+    except Exception as e:
+        if handle_github_error(e, "搜尋"):
+            return None
+        print(f"  ❌ GitHub 搜尋失敗：{e}")
+        return None
     return github_query, repos
+
+
 def deep_dive(model: dict, owner: str, repo: str, follow_up: str):
     """Step 6-8：深入查詢指定 repo"""
     model_name = model["name"]
     model_id = model["id"]
 
     print(f"\n  🤖 [{model_name}] 判斷需要查詢哪些資料...")
-    endpoints_str = call_llm(model_id, REPO_ENDPOINTS_SYSTEM, follow_up)
+    try:
+        endpoints_str = call_llm(model_id, REPO_ENDPOINTS_SYSTEM, follow_up)
+    except Exception as e:
+        if handle_llm_error(model_name, e, "判斷查詢資料"):
+            return
+        print(f"  ❌ [{model_name}] 無法判斷查詢資料：{e}")
+        return
     endpoints = [e.strip() for e in endpoints_str.split(",")]
     print(f"  📋 需要查詢：{', '.join(endpoints)}")
 
     data_parts = []
 
-    if "info" in endpoints:
-        info = github_get_repo(owner, repo)
-        data_parts.append(f"## Repo 基本資訊\n{json.dumps(info, ensure_ascii=False, indent=2)[:2000]}")
+    try:
+        if "info" in endpoints:
+            info = github_get_repo(owner, repo)
+            data_parts.append(f"## Repo 基本資訊\n{json.dumps(info, ensure_ascii=False, indent=2)[:2000]}")
 
-    if "readme" in endpoints:
-        readme = github_get_readme(owner, repo)
-        data_parts.append(f"## README\n{readme}")
+        if "readme" in endpoints:
+            readme = github_get_readme(owner, repo)
+            data_parts.append(f"## README\n{readme}")
 
-    if "languages" in endpoints:
-        langs = github_get_languages(owner, repo)
-        data_parts.append(f"## 使用語言\n{json.dumps(langs, ensure_ascii=False)}")
+        if "languages" in endpoints:
+            langs = github_get_languages(owner, repo)
+            data_parts.append(f"## 使用語言\n{json.dumps(langs, ensure_ascii=False)}")
 
-    if "releases" in endpoints:
-        releases = github_get_releases(owner, repo)
-        release_summary = [{"tag": r["tag_name"], "date": r["published_at"], "name": r["name"]} for r in releases]
-        data_parts.append(f"## 最新 Release\n{json.dumps(release_summary, ensure_ascii=False, indent=2)}")
+        if "releases" in endpoints:
+            releases = github_get_releases(owner, repo)
+            release_summary = [{"tag": r["tag_name"], "date": r["published_at"], "name": r["name"]} for r in releases]
+            data_parts.append(f"## 最新 Release\n{json.dumps(release_summary, ensure_ascii=False, indent=2)}")
 
-    if not data_parts:
-        data_parts.append(github_get_repo(owner, repo).__str__())
+        if not data_parts:
+            data_parts.append(github_get_repo(owner, repo).__str__())
+    except Exception as e:
+        if handle_github_error(e, "查詢 repo 資料"):
+            return
+        print(f"  ❌ GitHub 查詢 repo 資料失敗：{e}")
+        return
 
     combined_data = "\n\n".join(data_parts)
     user_prompt = f"使用者問題：{follow_up}\n\n---\n\n{combined_data}"
 
     print(f"\n  🤖 [{model_name}] 整理答案中...\n")
-    answer = call_llm(model_id, SYNTHESIZE_SYSTEM, user_prompt)
+    try:
+        answer = call_llm(model_id, SYNTHESIZE_SYSTEM, user_prompt)
+    except Exception as e:
+        if handle_llm_error(model_name, e, "整理回答"):
+            return
+        print(f"  ❌ [{model_name}] 無法整理回答：{e}")
+        return
 
     print("─" * 60)
     print(f"【{model_name} 的回答】")
