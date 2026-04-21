@@ -1,0 +1,138 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="254" viewBox="0 0 1240 254" font-family="Menlo, Monaco, monospace">
+<rect width="100%" height="100%" fill="#0b1220"/>
+<text x="20" y="34" font-size="20" font-weight="700" fill="#f9fafb">Part 2 — Multi-Model Eval (30 cases × 3 models)</text>
+<text x="20" y="60" font-size="13" fill="#9ca3af">Green = pass, red = fail. Column numbers are case IDs.</text>
+<text x="20" y="88" font-size="11" fill="#6b7280">model</text>
+<text x="230" y="88" font-size="11" fill="#6b7280" text-anchor="end">accuracy</text>
+<text x="300" y="88" font-size="11" fill="#6b7280">tier</text>
+<text x="374.0" y="88" font-size="10" fill="#9ca3af" text-anchor="middle">1</text>
+<text x="402.0" y="88" font-size="10" fill="#9ca3af" text-anchor="middle">2</text>
+<text x="430.0" y="88" font-size="10" fill="#9ca3af" text-anchor="middle">3</text>
+<text x="458.0" y="88" font-size="10" fill="#9ca3af" text-anchor="middle">4</text>
+<text x="486.0" y="88" font-size="10" fill="#9ca3af" text-anchor="middle">5</text>
+<text x="514.0" y="88" font-size="10" fill="#9ca3af" text-anchor="middle">6</text>
+<text x="542.0" y="88" font-size="10" fill="#9ca3af" text-anchor="middle">7</text>
+<text x="570.0" y="88" font-size="10" fill="#9ca3af" text-anchor="middle">8</text>
+<text x="598.0" y="88" font-size="10" fill="#9ca3af" text-anchor="middle">9</text>
+<text x="626.0" y="88" font-size="10" fill="#9ca3af" text-anchor="middle">10</text>
+<text x="654.0" y="88" font-size="10" fill="#9ca3af" text-anchor="middle">11</text>
+<text x="682.0" y="88" font-size="10" fill="#9ca3af" text-anchor="middle">12</text>
+<text x="710.0" y="88" font-size="10" fill="#9ca3af" text-anchor="middle">13</text>
+<text x="738.0" y="88" font-size="10" fill="#9ca3af" text-anchor="middle">14</text>
+<text x="766.0" y="88" font-size="10" fill="#9ca3af" text-anchor="middle">15</text>
+<text x="794.0" y="88" font-size="10" fill="#9ca3af" text-anchor="middle">16</text>
+<text x="822.0" y="88" font-size="10" fill="#9ca3af" text-anchor="middle">17</text>
+<text x="850.0" y="88" font-size="10" fill="#9ca3af" text-anchor="middle">18</text>
+<text x="878.0" y="88" font-size="10" fill="#9ca3af" text-anchor="middle">19</text>
+<text x="906.0" y="88" font-size="10" fill="#9ca3af" text-anchor="middle">20</text>
+<text x="934.0" y="88" font-size="10" fill="#9ca3af" text-anchor="middle">21</text>
+<text x="962.0" y="88" font-size="10" fill="#9ca3af" text-anchor="middle">22</text>
+<text x="990.0" y="88" font-size="10" fill="#9ca3af" text-anchor="middle">23</text>
+<text x="1018.0" y="88" font-size="10" fill="#9ca3af" text-anchor="middle">24</text>
+<text x="1046.0" y="88" font-size="10" fill="#9ca3af" text-anchor="middle">25</text>
+<text x="1074.0" y="88" font-size="10" fill="#9ca3af" text-anchor="middle">26</text>
+<text x="1102.0" y="88" font-size="10" fill="#9ca3af" text-anchor="middle">27</text>
+<text x="1130.0" y="88" font-size="10" fill="#9ca3af" text-anchor="middle">28</text>
+<text x="1158.0" y="88" font-size="10" fill="#9ca3af" text-anchor="middle">29</text>
+<text x="1186.0" y="88" font-size="10" fill="#9ca3af" text-anchor="middle">30</text>
+<text x="20" y="119" font-size="13" fill="#e5e7eb">claude-sonnet-4.5</text>
+<text x="230" y="119" font-size="13" font-weight="600" fill="#10b981" text-anchor="end">100.0%</text>
+<text x="300" y="119" font-size="11" fill="#9ca3af">closed</text>
+<rect x="362" y="102" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="390" y="102" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="418" y="102" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="446" y="102" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="474" y="102" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="502" y="102" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="530" y="102" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="558" y="102" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="586" y="102" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="614" y="102" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="642" y="102" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="670" y="102" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="698" y="102" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="726" y="102" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="754" y="102" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="782" y="102" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="810" y="102" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="838" y="102" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="866" y="102" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="894" y="102" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="922" y="102" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="950" y="102" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="978" y="102" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="1006" y="102" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="1034" y="102" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="1062" y="102" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="1090" y="102" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="1118" y="102" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="1146" y="102" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="1174" y="102" width="24" height="24" fill="#10b981" rx="4"/>
+<text x="20" y="147" font-size="13" fill="#e5e7eb">deepseek-v3</text>
+<text x="230" y="147" font-size="13" font-weight="600" fill="#10b981" text-anchor="end"> 96.7%</text>
+<text x="300" y="147" font-size="11" fill="#9ca3af">open</text>
+<rect x="362" y="130" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="390" y="130" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="418" y="130" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="446" y="130" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="474" y="130" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="502" y="130" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="530" y="130" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="558" y="130" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="586" y="130" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="614" y="130" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="642" y="130" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="670" y="130" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="698" y="130" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="726" y="130" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="754" y="130" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="782" y="130" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="810" y="130" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="838" y="130" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="866" y="130" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="894" y="130" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="922" y="130" width="24" height="24" fill="#ef4444" rx="4"/>
+<rect x="950" y="130" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="978" y="130" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="1006" y="130" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="1034" y="130" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="1062" y="130" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="1090" y="130" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="1118" y="130" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="1146" y="130" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="1174" y="130" width="24" height="24" fill="#10b981" rx="4"/>
+<text x="20" y="175" font-size="13" fill="#e5e7eb">gpt-oss-120b</text>
+<text x="230" y="175" font-size="13" font-weight="600" fill="#10b981" text-anchor="end"> 96.7%</text>
+<text x="300" y="175" font-size="11" fill="#9ca3af">open</text>
+<rect x="362" y="158" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="390" y="158" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="418" y="158" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="446" y="158" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="474" y="158" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="502" y="158" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="530" y="158" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="558" y="158" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="586" y="158" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="614" y="158" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="642" y="158" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="670" y="158" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="698" y="158" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="726" y="158" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="754" y="158" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="782" y="158" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="810" y="158" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="838" y="158" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="866" y="158" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="894" y="158" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="922" y="158" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="950" y="158" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="978" y="158" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="1006" y="158" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="1034" y="158" width="24" height="24" fill="#ef4444" rx="4"/>
+<rect x="1062" y="158" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="1090" y="158" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="1118" y="158" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="1146" y="158" width="24" height="24" fill="#10b981" rx="4"/>
+<rect x="1174" y="158" width="24" height="24" fill="#10b981" rx="4"/>
+<text x="20" y="218" font-size="12" fill="#9ca3af">Threshold: &gt;85% accuracy. Models ≥85% shown in green.</text>
+</svg>

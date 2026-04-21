@@ -1,10 +1,15 @@
 import os
+import sys
 import tempfile
 import unittest
 from io import StringIO
+from pathlib import Path
 from unittest.mock import patch
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 import tool
+from eval.dataset import grade
 
 
 class ToolTests(unittest.TestCase):
@@ -37,6 +42,38 @@ class ToolTests(unittest.TestCase):
     def test_normalize_query_output(self):
         text = "```\nlanguage:python   stars:>500\n```"
         self.assertEqual(tool.normalize_query_output(text), "language:python stars:>500")
+
+    def test_normalize_strips_gpt_oss_reasoning_tokens(self):
+        leaked = "<|channel|>analysis<|message|>reasoning…<|channel|>final<|message|>language:rust cli"
+        self.assertEqual(tool.normalize_query_output(leaked), "language:rust cli")
+
+    def test_grade_sentinel_match(self):
+        self.assertEqual(grade("CLARIFY_NEEDED", "CLARIFY_NEEDED"), (True, "ok"))
+        passed, reason = grade("language:python", "CLARIFY_NEEDED")
+        self.assertFalse(passed)
+        self.assertIn("expected exact", reason)
+
+    def test_grade_required_and_forbidden(self):
+        expect = {"required": ["language:python", "security"], "forbidden": ["pythn"]}
+        self.assertEqual(grade("language:python security stars:>500", expect), (True, "ok"))
+        passed, reason = grade("python security", expect)
+        self.assertFalse(passed)
+        self.assertIn("language:python", reason)
+        passed, reason = grade("language:python pythn security", expect)
+        self.assertFalse(passed)
+        self.assertIn("forbidden token", reason)
+
+    def test_grade_regex(self):
+        expect = {"required": [], "forbidden": [], "regex": [r"stars:(>=?)1000"]}
+        self.assertEqual(grade("language:rust stars:>=1000", expect)[0], True)
+        self.assertEqual(grade("language:rust stars:>1000", expect)[0], True)
+        self.assertEqual(grade("language:rust stars:999", expect)[0], False)
+
+    def test_grade_sentinel_on_positive_case_fails(self):
+        expect = {"required": ["language:python"], "forbidden": []}
+        passed, reason = grade("CLARIFY_NEEDED", expect)
+        self.assertFalse(passed)
+        self.assertIn("sentinel", reason)
 
     def test_parse_endpoints_filters_noise(self):
         raw = "info, readme.\nunknown, releases"
