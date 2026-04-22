@@ -19,7 +19,7 @@
 {"id": 19, "category": "filters", "input": "looking for golang kubernetes operators with helm charts apache license", "canonical_query": "language:go kubernetes operator helm chart license:apache-2.0", "notes": "'golang' must map to language:go, not language:golang"}
 {"id": 20, "category": "filters", "input": "Node.js API frameworks with MIT license, still updated in the last year", "canonical_query": "language:javascript api framework license:mit pushed:>2025-04-22", "notes": "node.js must map to language:javascript; 'last year' anchors one year before today"}
 {"id": 21, "category": "multilingual", "input": "オープンソースの Python 製データ可視化ツール，stars 大於 2000", "canonical_query": "language:python visualization tool stars:>2000"}
-{"id": 22, "category": "contradiction", "input": "Static site generators written in Rust or Go with over 1000 stars", "canonical_query": "language:rust static site generator stars:>1000", "notes": "two languages proposed; prompt rule picks the first-mentioned (rust). language:go is also a semantically defensible alternative."}
+{"id": 22, "category": "contradiction", "input": "Static site generators written in Rust or Go with over 1000 stars", "canonical_query": "language:rust static site generator stars:>1000", "notes": "two languages proposed; prompt rule mandates picking the first-mentioned (rust). Emitting language:go, or both languages simultaneously, violates the rule."}
 {"id": 23, "category": "clarify", "input": "幫我一下", "canonical_query": "CLARIFY_NEEDED"}
 {"id": 24, "category": "clarify", "input": "some cool tools", "canonical_query": "CLARIFY_NEEDED"}
 {"id": 25, "category": "clarify", "input": "找東西", "canonical_query": "CLARIFY_NEEDED"}

@@ -46,8 +46,11 @@ python3 tool.py "找近期還有維護的 Python 安全工具"
 
 ### 已修補的 failure modes
 
-完整 break-testing 紀錄見 [`FAILURES.md`](./FAILURES.md)，本節列出其中的關鍵項目：
+涵蓋題目點名的四類 break-testing（typos / conflicting constraints / non-English / ambiguous），以及開發過程中遇到的其他 code-side 問題：
 
+- **Typos**：query 含 `pythn`、`securty`、`mroe`、`starrs` 等拼錯的 keyword 時，prompt 會先校正再組 query；eval 用 `not-icontains` 驗證誤拼字不會洩漏到最終輸出。
+- **Conflicting constraints**：遇到互相矛盾的 qualifier（例：同時 `language:rust` 與 `language:go`，或 `stars:>1000` 與 `stars:<10`）時，依 prompt 規則只保留先出現或較合理的那一個，避免產生 0 筆結果。
+- **Non-English**：中、日、混語輸入會把技術名詞翻成英文 keyword（如 `機器學習` → `machine learning`、`可視化` → `visualization`），`golang` / `node.js` 等別稱也會正規化到 `language:go` / `language:javascript`。
 - `.env` 解析支援 `export` 與 quoted values，避免本地設定格式稍有不同就讀不到 key。
 - OpenRouter / GitHub API 的 401、403、網路失敗都有明確錯誤訊息，不會直接 crash。
 - 模型輸出會清除 code fence、多餘空白，以及部分 open-weight 模型洩漏的 reasoning control token。
@@ -79,7 +82,7 @@ python3 tool.py "找近期還有維護的 Python 安全工具"
 | 類別 | 題數 | 目的 |
 | --- | --- | --- |
 | simple | 8 | 基本 language + 關鍵字對應，檢驗 happy path |
-| filters | 9 | star / fork / license / date comparator / N+ vs >N 等 qualifier |
+| filters | 8 | star / fork / license / date comparator / N+ vs >N 等 qualifier |
 | multilingual | 4 | 中、日、中英混雜輸入，含專有名詞翻譯與別稱 |
 | typos | 1 | 故意拼錯的 keyword，驗證修正規則 |
 | contradiction | 1 | 同時給兩個矛盾 qualifier，驗證第一出現優先規則 |

@@ -349,8 +349,10 @@ tests:
         value: "stars:>1000"
       - type: regex
         value: "static[\\s\\-]site"
-      - type: regex
-        value: "language:(rust|go)"
+      - type: icontains
+        value: "language:rust"
+      - type: not-icontains
+        value: "language:go"
   - description: "#23 [clarify] 幫我一下"
     vars:
       query: 幫我一下
