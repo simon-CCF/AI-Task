@@ -2,6 +2,16 @@
 <img width="569" height="311" alt="image" src="https://github.com/user-attachments/assets/ac7f09d1-3621-43f0-a240-a8f4cf0e7ef2" />
 
 
+## 製作邏輯
+
+思考來源於紅隊工具 `searchsploit` 與 `poc-seeker` 的運作方式：將分散的漏洞資訊與利用條件進行結構化整理，並透過關鍵字與語意映射快速定位可用資源。本專案把同樣的思路套在 GitHub 生態上，進一步結合 LLM 進行查詢轉換與結果過濾，讓使用者能以自然語言高效取得對應的 exploit 與分析資訊。
+
+具體落地成三層：
+
+1. **語意層**：LLM 把自然語言（含中日英混雜、別稱、拼錯、模糊描述）正規化成 GitHub Search qualifier 的組合（`language:` / `stars:` / `license:` / `pushed:` / `in:name,description` 等）。
+2. **執行層**：`tool.py` 直接呼叫 GitHub Search API 與 repo follow-up endpoints（README、languages、releases），確保輸出是「真的搜得到的 repo」而不只是 query 字串。
+3. **容錯層**：輸入模糊時由 LLM 先給幾個搜尋方向讓使用者挑；搜不到結果時自動放寬 qualifier；typo、矛盾條件、prompt injection 都有對應的防線。
+
 ## 需求
 
 - Python 3.10 以上
@@ -57,6 +67,11 @@ python3 tool.py "找近期還有維護的 Python 安全工具"
 - **Typos**：query 含 `pythn`、`securty`、`mroe`、`starrs` 等拼錯的 keyword 時，prompt 會先校正再組 query；eval 用 `not-icontains` 驗證誤拼字不會洩漏到最終輸出。
 - **Conflicting constraints**：遇到互相矛盾的 qualifier（例：同時 `language:rust` 與 `language:go`，或 `stars:>1000` 與 `stars:<10`）時，依 prompt 規則只保留先出現或較合理的那一個，避免產生 0 筆結果。
 - **Non-English**：中、日、混語輸入會把技術名詞翻成英文 keyword（如 `機器學習` → `machine learning`、`可視化` → `visualization`），`golang` / `node.js` 等別稱也會正規化到 `language:go` / `language:javascript`。
+- **Ambiguous（猜意圖 + 自動放寬）**：輸入觸發 `CLARIFY_NEEDED` 或 `INVALID_QUERY` 時，不再直接結束，而是讓 LLM 先提出 3 個可能的搜尋方向（每個方向附上對應的 GitHub query）讓使用者挑；挑完若仍 0 筆，就依 `stars → pushed/created → fork/archived → license → language` 的順序自動放寬 qualifier 再重試，而不是退回要求使用者改 query。
+- **CLARIFY 改為 anchor-based 判斷**：早期用「技術概念少於 2 個」做觸發條件，會把「claude 自動化框架」這種有明確 anchor 的輸入誤判成模糊；現在只要句子裡有任何一個 programming language / 產品名（claude, kubernetes, react…）/ 具體 domain concept（machine learning, static site generator…），就會建出 query，`CLARIFY_NEEDED` 只保留給「找東西」「some cool tools」這種完全沒 anchor 的輸入。
+- **Superlative 不再灌成 `stars:>0`**：「最多星」「星星數最多」這類沒有數字門檻的 superlative，以前會被翻成 `stars:>0`（對 GitHub 來說是雜訊，因為預設就是 `sort=stars desc`）；現在只有使用者明確給數字時才會輸出 `stars:>N`。
+- **「X 相關」自動加 `in:name,description`**：「跟 claude 相關」這類泛指輸入原本會被模型翻成單字 `claude`，結果大量 README 提到 claude 的不相關 repo（AutoGPT 之類）會灌進結果；現在會自動帶 `in:name,description`，把 match 限制在 repo 名稱與描述。
+- **Prompt injection 防線**：`Ignore previous instructions…`、偽造 SYSTEM / USER tag 要求吐 system prompt 的輸入，會走 `INVALID_QUERY` 分支，不會照做也不會洩漏系統 prompt。
 - `.env` 解析支援 `export` 與 quoted values，避免本地設定格式稍有不同就讀不到 key。
 - OpenRouter / GitHub API 的 401、403、網路失敗都有明確錯誤訊息，不會直接 crash。
 - 模型輸出會清除 code fence、多餘空白，以及部分 open-weight 模型洩漏的 reasoning control token。
