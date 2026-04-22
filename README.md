@@ -64,7 +64,7 @@ python3 tool.py "找近期還有維護的 Python 安全工具"
 
 ## 多模型評估（promptfoo）
 
-評估流程現在完全由 `promptfoo` 驅動，不再維護獨立的 Python runner、smoke test 或 repo 內的 eval artifacts。
+評估流程完全由 `promptfoo` 驅動，不再維護獨立的 Python eval runner 或 smoke test。repo 內的 eval artifact 僅保留 [`eval/ground_truth.jsonl`](./eval/ground_truth.jsonl)（canonical query 清單）與 [`promptfooconfig.yaml`](./promptfooconfig.yaml)（測資與 assertions）。
 
 ### 目前設計
 
@@ -77,7 +77,7 @@ python3 tool.py "找近期還有維護的 Python 安全工具"
 
 ### 30 題測資設計方法
 
-題目要求的是 *programmatically gather or generate*。本專案採「taxonomy-driven curation」：先列出題目明示的四類 break-testing 情境（ambiguous / conflicting constraints / typos / non-English），再依實際 GitHub Search qualifier 空間擴充為 8 個類別，最後在每個類別中手寫多筆測資達到 30 題。類別分布如下：
+題目允許 *programmatically gather or generate*，本專案走「gather」路線，採 taxonomy-driven curation：先固定題目點名的四類 break-testing 情境（ambiguous / conflicting constraints / typos / non-English），再依 GitHub Search qualifier 空間擴充為 8 個類別，每個類別下的測資都刻意針對該類別的核心規則設計，不堆 happy path。這比從公開 corpus 亂抓更能精準命中 failure mode。每題對應的 canonical query 記錄在 [`eval/ground_truth.jsonl`](./eval/ground_truth.jsonl)。類別分布如下：
 
 | 類別 | 題數 | 目的 |
 | --- | --- | --- |
@@ -89,8 +89,6 @@ python3 tool.py "找近期還有維護的 Python 安全工具"
 | clarify | 3 | 資訊量不足，必須輸出 `CLARIFY_NEEDED` |
 | invalid | 3 | 與軟體/程式碼無關，必須輸出 `INVALID_QUERY` |
 | injection | 2 | 提示詞注入攻擊，必須輸出 `INVALID_QUERY`，不得洩漏 system prompt |
-
-類別分布是刻意讓測資覆蓋題目點名的 4 類 break-testing 情境，而不是只堆 happy path。
 
 ### 如何執行
 
