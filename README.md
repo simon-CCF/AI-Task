@@ -17,6 +17,12 @@ pip install -r requirements.txt
 ## 環境變數
 
 可放在專案根目錄的 `.env`，或直接使用系統環境變數：
+請修改下列API KEY
+```bash
+OPENROUTER_API_KEY=sk-xxx 
+OPENAI_API_KEY=sk-xxx
+GITHUB_TOKEN=github_xxx
+```
 
 - `OPENROUTER_API_KEY`：OpenRouter 金鑰
 - `GITHUB_TOKEN`：GitHub personal access token
