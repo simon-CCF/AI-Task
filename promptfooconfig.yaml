@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=https://promptfoo.dev/config-schema.json
-description: "Part 2 — promptfoo-only multi-model eval for GitHub NL -> Search query"
+description: "Multi-model eval for GitHub NL -> Search query generation"
 
 providers:
   - id: openrouter:openai/gpt-oss-120b

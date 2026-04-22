@@ -385,7 +385,7 @@ SYNTHESIZE_SYSTEM = """
 
 
 def run(model: dict, nl_query: str):
-    """單一模型執行完整 Part 1 流程（Step 1-4）"""
+    """單一模型的搜尋流程：NL query → GitHub Search query → 呼叫 API 取得 repo 列表"""
     model_name = model["name"]
     model_id = model["id"]
 
@@ -427,7 +427,7 @@ def run(model: dict, nl_query: str):
 
 
 def deep_dive(model: dict, owner: str, repo: str, follow_up: str):
-    """Step 6-8：深入查詢指定 repo"""
+    """深入查詢指定 repo：判斷 endpoints → 抓資料 → 用 LLM 整理成回答"""
     model_name = model["name"]
     model_id = model["id"]
 

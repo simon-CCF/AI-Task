@@ -27,3 +27,6 @@ venv/
 node_modules/
 .claude.md
 claude.md
+
+# Local notes (not for upload)
+explain.md

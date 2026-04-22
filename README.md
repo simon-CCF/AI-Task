@@ -27,7 +27,7 @@ pip install -r requirements.txt
 - `export KEY=value`
 - 帶單引號或雙引號的值
 
-## Part 1：互動式工具
+## 互動式 CLI 工具
 
 ### 執行
 
@@ -57,9 +57,9 @@ python3 tool.py "找近期還有維護的 Python 安全工具"
 - **跨語言翻譯細節**：多語混雜時，像「可視化」應該翻成 `visualization`、還是保留原文當自由文字，並沒有唯一正解；不同模型會在翻譯與保留原詞之間做不同取捨。
 - **GitHub Search 的排序與索引限制**：即使 query 本身是合理的，GitHub 搜尋結果仍受索引、stars 排序、topic 標註品質影響，所以「最想找的 repo」不一定總在前幾筆。
 
-## Part 2：promptfoo-only Eval
+## 多模型評估（promptfoo）
 
-Part 2 現在完全由 `promptfoo` 驅動，不再維護獨立的 Python runner、smoke test 或 repo 內的 eval artifacts。
+評估流程現在完全由 `promptfoo` 驅動，不再維護獨立的 Python runner、smoke test 或 repo 內的 eval artifacts。
 
 ### 目前設計
 
