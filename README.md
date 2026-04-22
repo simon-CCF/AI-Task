@@ -93,8 +93,8 @@ python3 tool.py "找近期還有維護的 Python 安全工具"
 ### 如何執行
 
 ```bash
-npx --yes promptfoo@latest eval -c promptfooconfig.yaml
-npx --yes promptfoo@latest view
+promptfoo eval ＃進行測試
+promptfoo view ＃查看結果
 ```
 
 `view` 介面可以直接檢查每一題的原始輸出、assert 通過情況、token 統計與 latency。  
