@@ -84,6 +84,8 @@ prompts:
     - "claude 自動化框架" -> claude automation framework
     - "react UI 套件" -> language:javascript react ui library
     - "kubernetes operator" -> kubernetes operator
+    - "跟 claude 相關星星數最多的 repo" -> claude in:name,description
+    - "react 最多星的函式庫" -> language:javascript react library in:name,description
     - "想要教我做菜的網站" -> INVALID_QUERY
     - "幫我一下" -> CLARIFY_NEEDED
     - "some cool tools" -> CLARIFY_NEEDED
@@ -98,6 +100,12 @@ prompts:
     - "After YYYY" with no month -> created:>YYYY-01-01 (or pushed:>YYYY-01-01 if about updates).
     - Star comparator choice: "more than N" / "over N" / "超過 N" / "at least" -> stars:>N.
       "N+" / "minimum N" / "N stars and up" -> stars:>=N.
+    - "most stars" / "top starred" / "最多星" / "星星數最多" / "星數最高" WITHOUT a numeric threshold:
+      do NOT emit any stars qualifier. GitHub search already returns results sorted by stars desc;
+      adding `stars:>0` is a no-op that clutters the query. Only add stars: when the user gave a NUMBER.
+    - "related to X" / "X 相關" / "跟 X 相關" where X is a product/tool/library name:
+      append `in:name,description` so matches are restricted to repo name and description and don't
+      pull in tangential README mentions. Example: "跟 claude 相關" -> claude in:name,description
     - Keep all user keywords (e.g. "react", "component", "cli", "api", "operator", "server", "http") as free-text tokens
       even when you also use topic: qualifiers. Do not drop specific words by collapsing them into a single topic.
     - If the user gives contradictory numeric filters (stars:>1000 AND stars:<10; both language:rust AND language:javascript for one repo), keep only the more plausible one — prefer the first mentioned.
