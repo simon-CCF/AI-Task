@@ -516,37 +516,55 @@ def main():
             print("  未輸入問題，結束。")
             sys.exit(0)
 
-    # 多模型搜尋（如果多個模型，使用第一個做搜尋，其餘做比較）
-    all_results = {}
-    primary_repos = None
-    status_counts = {}
+    # 多模型搜尋：當所有模型都回 clarify/invalid/empty/refusal 時，讓使用者補描述再試
+    # 真的網路或 API 錯誤（status == "error"）重新描述救不了，直接退出
+    recoverable_statuses = {"clarify", "invalid", "empty", "refusal"}
 
-    for model in models:
-        try:
-            result = run(model, nl_query)
+    while True:
+        all_results = {}
+        primary_repos = None
+        status_counts = {}
+
+        for model in models:
+            try:
+                result = run(model, nl_query)
+            except Exception as e:
+                print(f"  ❌ [{model['name']}] 發生錯誤：{e}")
+                status_counts["error"] = status_counts.get("error", 0) + 1
+                continue
+
             status = result["status"]
             status_counts[status] = status_counts.get(status, 0) + 1
-
             if status != "ok":
                 continue
-            github_query = result["query"]
-            repos = result["repos"]
-            all_results[model["name"]] = {"query": github_query, "repos": repos}
+            all_results[model["name"]] = {"query": result["query"], "repos": result["repos"]}
             if primary_repos is None:
-                primary_repos = repos
-        except Exception as e:
-            print(f"  ❌ [{model['name']}] 發生錯誤：{e}")
+                primary_repos = result["repos"]
 
-    if not primary_repos:
-        if status_counts.get("invalid") and len(status_counts) == 1:
-            print("  這次輸入不屬於可搜尋的技術主題。")
-        elif status_counts.get("clarify") and len(status_counts) == 1:
-            print("  這次輸入太模糊，補上技術關鍵字後再試一次。")
-        elif status_counts.get("empty") and len(status_counts) == 1:
-            print("  目前沒有找到符合條件的 repository。")
-        else:
+        if primary_repos:
+            break
+
+        if not status_counts or not set(status_counts).issubset(recoverable_statuses):
             print("  所有模型都未產生可用結果，請檢查輸入內容、API key 或網路連線。")
-        sys.exit(1)
+            sys.exit(1)
+
+        hints = []
+        if status_counts.get("clarify"):
+            hints.append("輸入太模糊，請加上語言、主題或 star 數等具體條件")
+        if status_counts.get("invalid"):
+            hints.append("輸入不像在找 GitHub 專案，請改用技術主題描述")
+        if status_counts.get("empty"):
+            hints.append("沒有找到符合的 repo，請換個關鍵字或放寬條件")
+        if status_counts.get("refusal"):
+            hints.append("模型拒絕處理此查詢，請換個說法")
+
+        print("\n  " + "；".join(hints) + "。")
+        print("  範例:「Python 安全工具，超過 500 星」、「Rust CLI 工具」、「TypeScript 前端框架」")
+        print("  重新描述你的搜尋問題（或按 Enter 結束）：")
+        nl_query = input("  > ").strip()
+        if not nl_query:
+            print("  結束。")
+            sys.exit(0)
 
     # 如果多模型，顯示 query 比較
     if len(models) > 1:
