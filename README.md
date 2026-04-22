@@ -46,6 +46,8 @@ python3 tool.py "找近期還有維護的 Python 安全工具"
 
 ### 已修補的 failure modes
 
+完整 break-testing 紀錄見 [`FAILURES.md`](./FAILURES.md)，本節列出其中的關鍵項目：
+
 - `.env` 解析支援 `export` 與 quoted values，避免本地設定格式稍有不同就讀不到 key。
 - OpenRouter / GitHub API 的 401、403、網路失敗都有明確錯誤訊息，不會直接 crash。
 - 模型輸出會清除 code fence、多餘空白，以及部分 open-weight 模型洩漏的 reasoning control token。
@@ -62,6 +64,8 @@ python3 tool.py "找近期還有維護的 Python 安全工具"
 評估流程現在完全由 `promptfoo` 驅動，不再維護獨立的 Python runner、smoke test 或 repo 內的 eval artifacts。
 
 ### 目前設計
+
+每題都先設想一個 canonical GitHub Search query 作為 ground truth，實際評估則轉成 constraint-based oracle（`icontains` 必要 token、`not-icontains` 禁止 token、`regex` 等價寫法），避免模型用合法但不同的寫法被誤判為錯誤。這讓 ground truth 的意圖仍然成立，但不會被綁死在單一字串上。
 
 - 30 筆 adversarial test cases 直接內嵌在 [`promptfooconfig.yaml`](./promptfooconfig.yaml)。
 - assert 使用 `equals`、`icontains`、`not-icontains`、`regex` 組合，容許語法等價但表達不同的 query。
@@ -132,6 +136,5 @@ promptfoo 的執行歷史會存放在本地 `.promptfoo/`，該目錄已被 `.gi
 ## 學到的事
 
 - **promptfoo 很適合做 structured-output regression**：一旦把 output normalize 與 asserts 定義清楚，重跑不同模型非常快，也很適合直接在 UI 看哪一題出錯。
-- **ground truth 最好拆成 assertion bundle，而不是只寫單一字串**：GitHub Search query 常常存在多個等價寫法，用 `icontains + regex + not-icontains` 比只比對整串字面值更合理。
 - **規則密度夠高時，較弱模型很容易漏 qualifier**：`language:`、`fork:false`、日期 comparator、sentinel handling 這些都要在 prompt 裡講得非常硬，不然模型會退回比較鬆散的自然語言關鍵字。
 - **把探索用的 sweep 結果和最後採用的模型集合分開寫會更清楚**：這輪 7 模型 sweep 幫助我看出 Kimi 在這個任務上明顯不穩定，但真正適合放進最終結論的，是那 6 個超過 85% 的模型。
