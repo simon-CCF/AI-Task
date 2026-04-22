@@ -101,6 +101,8 @@ promptfoo view ＃查看結果
 promptfoo 的執行歷史會存放在本地 `.promptfoo/`，該目錄已被 `.gitignore` 排除。
 
 ## 模型選擇
+透過觀察https://artificialanalysis.ai/models
+篩選出7 個候選模型
 
 這次把 7 個候選模型都放進同一輪 promptfoo sweep，比較它們在「GitHub query 生成」這個任務上的穩定度：
 
