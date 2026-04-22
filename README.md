@@ -20,7 +20,6 @@ pip install -r requirements.txt
 請修改下列API KEY
 ```bash
 OPENROUTER_API_KEY=sk-xxx 
-OPENAI_API_KEY=sk-xxx
 GITHUB_TOKEN=github_xxx
 ```
 
