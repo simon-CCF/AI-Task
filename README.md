@@ -144,9 +144,9 @@ promptfoo 的執行歷史會存放在本地 `.promptfoo/`，該目錄已被 `.gi
 
 這一輪是用同一份 `promptfooconfig.yaml` 跑 **30 題 × 7 個 providers**。  
 下面數字直接整理自 promptfoo UI：
-```diff
-+主要對比（成本考量、能力考量、延遲考量、穩定性），目前使用openrouter作為統一接口，可視情況調整為官方API提高穩定性惟管理上較為繁瑣
-```
+
+-主要對比（成本考量、能力考量、延遲考量、穩定性），目前使用openrouter作為統一接口，可視情況調整為官方API提高穩定性惟管理上較為繁瑣
+
 
 | Model                  | Cases | Asserts | Accuracy | Total Tokens | Avg Tokens | Avg Latency | Tokens/Sec | Est. Cost (USD) |
 | ---------------------- | ----- | ------- | -------- | ------------ | ---------- | ----------- | ---------- | --------------- |
