@@ -114,7 +114,7 @@ promptfoo 的執行歷史會存放在本地 `.promptfoo/`，該目錄已被 `.gi
 | gpt-5.4 (xhigh) | 三巨頭之一，代表 OpenAI 高推理設定 |
 | kimi-k2.5 | 前陣子在 OpenClaw agent 討論中很熱門，拿來做額外 open-style 候選比較 |
 
-## 2026-04-22 promptfoo 實跑結果
+## promptfoo 實跑結果
 
 這一輪是用同一份 `promptfooconfig.yaml` 跑 **30 題 × 7 個 providers**。  
 下面數字直接整理自 promptfoo UI：
