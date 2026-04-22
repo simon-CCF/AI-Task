@@ -75,9 +75,9 @@ python3 tool.py "找近期還有維護的 Python 安全工具"
 - `defaultTest.options.transform` 會先清掉 control token、code fence 與多餘空白，再進行 assertions。
 - provider 全部走 OpenRouter，方便用同一份 config 比較不同模型。
 
-### 30 題測資設計方法
+### 30 題設計方法
 
-題目允許 *programmatically gather or generate*，本專案走「gather」路線，採 taxonomy-driven curation：先固定題目點名的四類 break-testing 情境（ambiguous / conflicting constraints / typos / non-English），再依 GitHub Search qualifier 空間擴充為 8 個類別，每個類別下的測資都刻意針對該類別的核心規則設計，不堆 happy path。這比從公開 corpus 亂抓更能精準命中 failure mode。每題對應的 canonical query 記錄在 [`eval/ground_truth.jsonl`](./eval/ground_truth.jsonl)。類別分布如下：
+本專案採 taxonomy-driven curation：先固定題目點名的四類 break-testing 情境（ambiguous / conflicting constraints / typos / non-English），再依 GitHub Search qualifier 空間擴充為 8 個類別，每個類別下的測資都刻意針對該類別的核心規則設計，不堆 happy path。這比從公開 corpus 亂抓更能精準命中 failure mode。每題對應的 canonical query 記錄在 [`eval/ground_truth.jsonl`](./eval/ground_truth.jsonl)。類別分布如下：
 
 | 類別 | 題數 | 目的 |
 | --- | --- | --- |
