@@ -31,6 +31,22 @@ Severity: Medium
 Fixed: Yes
 Fix: CLI 與 `promptfooconfig.yaml` 的 `defaultTest.options.transform` 都套同一套清洗：先取 `<|channel|>final` 之後的段落，再剝掉 code fence 與多餘空白
 
+### Failure: 使用者輸入含 typo 時，misspelled tokens 被當成 free-text 關鍵字
+Input: "find pythn securty tools with mroe than 500 starrs"
+Expected: `language:python security tool stars:>500`（拼寫全部校正）
+Actual: 早期模型會把 `pythn`、`securty`、`mroe`、`starrs` 當 free-text 直接塞進 query，送到 GitHub 幾乎抓不到結果
+Severity: Medium
+Fixed: Yes
+Fix: prompt 加上 "Fix obvious typos in keywords before using them" 規則與範例；eval 在 promptfooconfig 第 17 題用 `not-icontains` 針對 `pythn` / `securty` / `mroe` / `starrs` 檢查，確保修正有落地
+
+### Failure: conflicting constraints 產生互相矛盾的 qualifier
+Input: 使用者同時給出矛盾條件，如 "Static site generators written in Rust or Go with over 1000 stars"，或 "Python web frameworks with stars:>1000 and stars:<10"
+Expected: 只保留較合理或先提到的條件（例：`language:rust` 而非同時 `language:rust language:go`）
+Actual: 早期模型會把兩組值都寫進 query（例：`language:rust language:go` 或 `stars:>1000 stars:<10`），導致 GitHub Search 回 0 筆
+Severity: Medium
+Fixed: Yes
+Fix: prompt 加上 "If the user gives contradictory numeric filters ... keep only the more plausible one — prefer the first mentioned" 規則；eval 第 22 題用 regex `language:(rust|go)` 允許任一語言但排除同時出現
+
 ### Failure: sentinel / 空結果分支缺失
 Input: "幫我一下"、"How do I cook pasta carbonara?"、正常 query 但 GitHub 回 0 筆、或選到的 repo 沒有 release
 Expected: 分別走 `CLARIFY_NEEDED`、`INVALID_QUERY`、空結果提示、「此 repo 尚無 release」提示

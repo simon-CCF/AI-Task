@@ -65,12 +65,29 @@ python3 tool.py "找近期還有維護的 Python 安全工具"
 
 ### 目前設計
 
-每題都先設想一個 canonical GitHub Search query 作為 ground truth，實際評估則轉成 constraint-based oracle（`icontains` 必要 token、`not-icontains` 禁止 token、`regex` 等價寫法），避免模型用合法但不同的寫法被誤判為錯誤。這讓 ground truth 的意圖仍然成立，但不會被綁死在單一字串上。
+每題都先在 [`eval/ground_truth.jsonl`](./eval/ground_truth.jsonl) 寫下 canonical GitHub Search query 作為 ground truth，實際評估再轉成 constraint-based oracle（`icontains` 必要 token、`not-icontains` 禁止 token、`regex` 等價寫法），避免模型用合法但不同的寫法被誤判為錯誤。這讓 ground truth 以獨立檔案存在、可被直接檢視，但不會被綁死在單一字串上。
 
-- 30 筆 adversarial test cases 直接內嵌在 [`promptfooconfig.yaml`](./promptfooconfig.yaml)。
+- 30 筆 adversarial test cases 直接內嵌在 [`promptfooconfig.yaml`](./promptfooconfig.yaml)，每題對應 `ground_truth.jsonl` 同 `id` 的 canonical query。
 - assert 使用 `equals`、`icontains`、`not-icontains`、`regex` 組合，容許語法等價但表達不同的 query。
 - `defaultTest.options.transform` 會先清掉 control token、code fence 與多餘空白，再進行 assertions。
 - provider 全部走 OpenRouter，方便用同一份 config 比較不同模型。
+
+### 30 題測資設計方法
+
+題目要求的是 *programmatically gather or generate*。本專案採「taxonomy-driven curation」：先列出題目明示的四類 break-testing 情境（ambiguous / conflicting constraints / typos / non-English），再依實際 GitHub Search qualifier 空間擴充為 8 個類別，最後在每個類別中手寫多筆測資達到 30 題。類別分布如下：
+
+| 類別 | 題數 | 目的 |
+| --- | --- | --- |
+| simple | 8 | 基本 language + 關鍵字對應，檢驗 happy path |
+| filters | 9 | star / fork / license / date comparator / N+ vs >N 等 qualifier |
+| multilingual | 4 | 中、日、中英混雜輸入，含專有名詞翻譯與別稱 |
+| typos | 1 | 故意拼錯的 keyword，驗證修正規則 |
+| contradiction | 1 | 同時給兩個矛盾 qualifier，驗證第一出現優先規則 |
+| clarify | 3 | 資訊量不足，必須輸出 `CLARIFY_NEEDED` |
+| invalid | 3 | 與軟體/程式碼無關，必須輸出 `INVALID_QUERY` |
+| injection | 2 | 提示詞注入攻擊，必須輸出 `INVALID_QUERY`，不得洩漏 system prompt |
+
+類別分布是刻意讓測資覆蓋題目點名的 4 類 break-testing 情境，而不是只堆 happy path。
 
 ### 如何執行
 
