@@ -389,7 +389,16 @@ Suggest 3 concrete directions they might actually want to search for on GitHub.
 
 Each direction must be an object with:
 - "description": short Traditional Chinese explanation (max 30 chars) of what this direction is
-- "query": a concrete GitHub Search query using qualifiers like language: / topic: / stars: / license:
+- "query": a concrete GitHub Search query. Keep it BROAD enough to actually return repos.
+
+Rules for the query field:
+- Use free-text keywords and at most ONE `topic:<slug>` qualifier.
+- `language:` is allowed ONLY when the direction is clearly language-specific, and the value MUST be
+  a real GitHub language in lowercase (python, javascript, typescript, go, rust, c++, c, java,
+  kotlin, swift, php, ruby, scala). Do NOT invent values like "Unity" / "Unreal" / "Arduino".
+- NEVER include `stars:`, `license:`, `extension:`, `fork:`, `pushed:`, or `created:` qualifiers.
+  They over-filter and kill the result set. The user's goal is to find something, not to filter.
+- Prefer 2–4 English keywords separated by spaces.
 
 Even if the input looks non-technical, stretch to tech-adjacent interpretations
 (projects named after the term, themed tools, detection/classification models, awesome lists, etc.).
@@ -489,6 +498,35 @@ def search_repos(model_name: str, github_query: str):
     return {"status": "ok", "query": github_query, "repos": repos}
 
 
+def search_with_fallback(model_name: str, github_query: str):
+    """先用原 query 搜，若空就逐步拿掉過濾 qualifier 再試，直到找到結果或真的沒有為止。"""
+    result = search_repos(model_name, github_query)
+    if result["status"] != "empty":
+        return result
+
+    import re as _re
+    current = github_query
+    # 由嚴到寬：先脫掉最容易打死結果的數值/日期 filter，最後才動到 language
+    relax_steps = [
+        ("放寬 star 門檻", r"\s*stars:\S+"),
+        ("放寬日期條件", r"\s*(?:pushed|created):\S+"),
+        ("放寬 fork / archived 條件", r"\s*(?:fork|archived):\S+"),
+        ("放寬授權條件", r"\s*license:\S+"),
+        ("放寬語言條件", r"\s*language:\S+"),
+    ]
+    for label, pattern in relax_steps:
+        new_query = " ".join(_re.sub(pattern, " ", current).split()).strip()
+        if not new_query or new_query == current:
+            continue
+        print(f"  🔁 {label}，重試：{new_query}")
+        retry = search_repos(model_name, new_query)
+        if retry["status"] == "ok":
+            return retry
+        current = new_query
+
+    return result
+
+
 def run(model: dict, nl_query: str):
     """單一模型的搜尋流程：NL query → GitHub Search query → 呼叫 API 取得 repo 列表"""
     model_name = model["name"]
@@ -516,7 +554,7 @@ def run(model: dict, nl_query: str):
         print(f"  ⚠️  [{model_name}] 模型拒絕處理此查詢。")
         return {"status": "refusal"}
 
-    return search_repos(model_name, github_query)
+    return search_with_fallback(model_name, github_query)
 
 
 def deep_dive(model: dict, owner: str, repo: str, follow_up: str):
@@ -645,13 +683,15 @@ def main():
         if status_counts.get("clarify") or status_counts.get("invalid"):
             guesses = generate_guesses(models[0], nl_query)
             if guesses:
-                chosen = prompt_guess_choice(guesses)
-                if chosen:
-                    search_result = search_repos("使用者選擇的方向", chosen["query"])
+                while True:
+                    chosen = prompt_guess_choice(guesses)
+                    if chosen is None:
+                        break  # 「以上都不是」或 Enter → 掉到下方重新描述流程
+                    search_result = search_with_fallback("使用者選擇的方向", chosen["query"])
                     if search_result["status"] == "ok":
                         all_results = {
                             "使用者選擇的方向": {
-                                "query": chosen["query"],
+                                "query": search_result["query"],
                                 "repos": search_result["repos"],
                             }
                         }
@@ -659,7 +699,10 @@ def main():
                         break
                     if search_result["status"] == "error":
                         sys.exit(1)
-                    # empty → 落入下方重新輸入流程
+                    # empty → 讓使用者在同一組 guesses 內改挑，不要被迫重新描述
+                    print("  ⚠️  這個方向即使放寬條件仍找不到 repo，請挑其他方向或按 Enter 自己補充描述。")
+                if primary_repos:
+                    break
 
         hints = []
         if status_counts.get("clarify"):
