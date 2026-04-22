@@ -64,7 +64,7 @@ python3 tool.py "找近期還有維護的 Python 安全工具"
 
 ## 多模型評估（promptfoo）
 
-評估流程完全由 `promptfoo` 驅動，不再維護獨立的 Python eval runner 或 smoke test。repo 內的 eval artifact 僅保留 [`eval/ground_truth.jsonl`](./eval/ground_truth.jsonl)（canonical query 清單）與 [`promptfooconfig.yaml`](./promptfooconfig.yaml)（測資與 assertions）。
+評估流程完全由 `promptfoo` 驅動，repo 內的 eval artifact 僅保留 [`eval/ground_truth.jsonl`](./eval/ground_truth.jsonl)（canonical query 清單）與 [`promptfooconfig.yaml`](./promptfooconfig.yaml)。
 
 ### 目前設計
 
