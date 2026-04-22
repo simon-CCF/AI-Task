@@ -1,4 +1,5 @@
 # GitHub CLI搜尋工具
+<img width="569" height="311" alt="image" src="https://github.com/user-attachments/assets/ac7f09d1-3621-43f0-a240-a8f4cf0e7ef2" />
 
 
 ## 需求
